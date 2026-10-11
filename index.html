@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4f46e5">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>StudyTrack - Syllabus Tracker</title>
+    <style>
+        [hidden] { display: none !important; }
+        :focus-visible { outline: 3px solid #818cf8; outline-offset: 2px; }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50 p-4 text-gray-900 sm:p-8">
+    <main class="mx-auto max-w-6xl space-y-6">
+        <header class="flex flex-col gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <a href="#dashboard" data-view="dashboard" class="flex items-center gap-2 self-start text-xl font-bold text-indigo-700" aria-label="StudyTrack Dashboard">
+                <span class="rounded-lg bg-indigo-600 p-2 text-white" aria-hidden="true">📚</span>
+                StudyTrack
+            </a>
+            <nav aria-label="Main navigation" class="flex flex-wrap gap-2 text-sm font-semibold">
+                <a href="#dashboard" data-view="dashboard" class="nav-link rounded-lg px-4 py-2 text-gray-600 hover:bg-indigo-50">Dashboard</a>
+                <a href="#subjects" data-view="subjects" class="nav-link rounded-lg px-4 py-2 text-gray-600 hover:bg-indigo-50">Subjects</a>
+                <a href="#progress" data-view="progress" class="nav-link rounded-lg px-4 py-2 text-gray-600 hover:bg-indigo-50">Progress</a>
+            </nav>
+        </header>
+
+        <p id="app-message" role="status" aria-live="polite" hidden class="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800"></p>
+
+        <section id="dashboard" data-page class="space-y-6">
+            <div class="rounded-3xl border border-indigo-100 bg-white shadow-sm">
+                <div class="flex flex-col items-center justify-between gap-8 rounded-t-3xl bg-gradient-to-r from-indigo-50 to-white p-6 sm:p-10 md:flex-row">
+                    <div class="max-w-2xl">
+                        <p class="mb-2 text-sm font-bold uppercase tracking-wider text-indigo-600">STUDENT SYLLABUS TRACKER</p>
+                        <h1 class="text-3xl font-extrabold leading-tight sm:text-4xl">Welcome to StudyTrack</h1>
+                        <p id="welcome-message" class="mt-3 text-gray-600">Welcome! Add your first subject to start tracking your syllabus.</p>
+                        <button type="button" data-view="subjects" class="mt-6 rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700">
+                            View My Subjects →
+                        </button>
+                    </div>
+                    <div class="flex h-36 w-36 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-7xl" aria-hidden="true">📖</div>
+                </div>
+                <div class="grid gap-px border-t border-gray-100 bg-gray-100 sm:grid-cols-3">
+                    <article class="bg-white p-5">
+                        <p class="text-sm font-medium text-gray-500">Total subjects</p>
+                        <p id="dashboard-subject-count" class="mt-2 text-3xl font-extrabold">0</p>
+                    </article>
+                    <article class="bg-white p-5">
+                        <p class="text-sm font-medium text-gray-500">Completed topics</p>
+                        <p id="dashboard-completed-count" class="mt-2 text-3xl font-extrabold text-green-600">0</p>
+                        <p class="mt-1 text-xs text-gray-400"><span id="dashboard-topic-count">0</span> topics total</p>
+                    </article>
+                    <article class="bg-white p-5">
+                        <div class="flex items-center justify-between gap-2">
+                            <p class="text-sm font-medium text-gray-500">Overall progress</p>
+                            <p id="dashboard-percent" class="font-bold text-indigo-600">0%</p>
+                        </div>
+                        <div class="mt-3 h-3 w-full rounded-full bg-gray-100" role="progressbar" aria-label="Overall syllabus completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                            <div id="dashboard-bar" class="h-3 rounded-full bg-indigo-600" style="width: 0%"></div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+            <div id="dashboard-empty" hidden class="rounded-2xl border border-dashed border-indigo-200 bg-white px-6 py-8 text-center">
+                <p class="text-3xl" aria-hidden="true">🌱</p>
+                <p class="mt-2 font-semibold text-gray-700">Your subjects and progress will appear here.</p>
+                <button type="button" data-view="subjects" class="mt-4 rounded-lg border border-indigo-200 px-5 py-2 font-semibold text-indigo-700 hover:bg-indigo-50">Add Subject</button>
+            </div>
+        </section>
+
+        <section id="subjects" data-page hidden class="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm sm:p-8">
+            <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                <div>
+                    <p class="text-sm font-bold uppercase tracking-wide text-indigo-600">YOUR SYLLABUS</p>
+                    <h1 class="mt-1 text-2xl font-extrabold">My Subjects</h1>
+                    <p class="mt-1 text-sm text-gray-500">Add subjects and check off each topic as you complete it.</p>
+                </div>
+                <button id="add-subject-button" type="button" class="rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white hover:bg-indigo-700">+ Add Subject</button>
+            </div>
+
+            <form id="subject-form" hidden class="mt-6 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-5">
+                <h2 id="subject-form-title" class="text-lg font-bold">Add a subject</h2>
+                <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                    <label class="text-sm font-semibold text-gray-700">
+                        Subject name
+                        <input id="subject-name" type="text" required maxlength="80" class="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 font-normal focus:border-indigo-500 focus:outline-none">
+                    </label>
+                    <label class="text-sm font-semibold text-gray-700">
+                        Description <span class="font-normal text-gray-400">(optional)</span>
+                        <input id="subject-description" type="text" maxlength="200" class="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 font-normal focus:border-indigo-500 focus:outline-none">
+                    </label>
+                </div>
+                <div class="mt-4 flex flex-wrap gap-2">
+                    <button type="submit" class="rounded-lg bg-indigo-600 px-5 py-2.5 font-semibold text-white hover:bg-indigo-700">Save Subject</button>
+                    <button id="cancel-subject-form" type="button" class="rounded-lg border border-gray-200 bg-white px-5 py-2.5 font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
+                </div>
+            </form>
+
+            <div id="subjects-empty" hidden class="mt-6 rounded-2xl border border-dashed border-indigo-200 bg-indigo-50/40 px-5 py-12 text-center">
+                <p class="text-5xl" aria-hidden="true">📚</p>
+                <h2 class="mt-3 text-xl font-bold">No subjects added yet</h2>
+                <p class="mx-auto mt-2 max-w-md text-sm text-gray-500">Add your first subject to start tracking your syllabus.</p>
+                <button id="empty-add-subject" type="button" class="mt-5 rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700">+ Add Your First Subject</button>
+            </div>
+            <div id="subject-list" class="mt-5 grid gap-5 md:grid-cols-2"></div>
+            <div class="mt-6 flex justify-between gap-3 border-t border-gray-100 pt-5">
+                <button type="button" data-view="dashboard" class="rounded-lg border border-gray-200 px-5 py-2 font-semibold text-gray-600 hover:bg-gray-50">← Back to Dashboard</button>
+            </div>
+        </section>
+
+        <section id="subject-topics-page" data-page hidden class="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm sm:p-8">
+            <div id="selected-subject-content"></div>
+            <div class="mt-6 flex flex-wrap justify-between gap-3 border-t border-gray-100 pt-5">
+                <button id="topics-back-button" type="button" class="rounded-lg border border-gray-200 px-5 py-2 font-semibold text-gray-600 hover:bg-gray-50">← Back to Subjects</button>
+                <button id="topics-next-button" type="button" class="rounded-lg bg-indigo-600 px-5 py-2 font-semibold text-white hover:bg-indigo-700">Next: Progress →</button>
+            </div>
+        </section>
+
+        <section id="progress" data-page hidden class="space-y-5">
+            <article class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
+                <p class="text-sm font-bold uppercase tracking-wide text-indigo-600">YOUR PROGRESS</p>
+                <h1 class="mt-1 text-2xl font-extrabold">Syllabus Progress</h1>
+                <p id="progress-summary" class="mt-2 text-gray-500">Add subjects and topics to start seeing your progress.</p>
+                <div class="mt-6 grid gap-4 sm:grid-cols-3">
+                    <div class="rounded-xl bg-indigo-50 p-5"><p class="text-sm text-gray-500">Subjects</p><p id="progress-subject-count" class="mt-1 text-3xl font-extrabold">0</p></div>
+                    <div class="rounded-xl bg-green-50 p-5"><p class="text-sm text-gray-500">Completed topics</p><p id="progress-completed-count" class="mt-1 text-3xl font-extrabold text-green-700">0</p></div>
+                    <div class="rounded-xl bg-gray-50 p-5"><p class="text-sm text-gray-500">Overall completion</p><p id="progress-percent" class="mt-1 text-3xl font-extrabold text-indigo-700">0%</p></div>
+                </div>
+                <div class="mt-5 h-4 w-full rounded-full bg-gray-100" role="progressbar" aria-label="Overall topic completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                    <div id="progress-bar" class="h-4 rounded-full bg-indigo-600" style="width: 0%"></div>
+                </div>
+            </article>
+            <article class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
+                <h2 class="text-lg font-bold">Progress by subject</h2>
+                <p id="progress-empty" hidden class="mt-4 text-sm text-gray-500">Add a subject and its topics to see progress by subject.</p>
+                <div id="subject-progress-list" class="mt-5 space-y-5"></div>
+            </article>
+            <div class="flex justify-between gap-3">
+                <button id="progress-back-button" type="button" class="rounded-lg border border-gray-200 px-5 py-2 font-semibold text-gray-600 hover:bg-gray-50">← Back</button>
+                <button type="button" data-view="dashboard" class="rounded-lg border border-indigo-200 px-5 py-2 font-semibold text-indigo-700 hover:bg-indigo-50">Back to Dashboard</button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        "use strict";
+
+        const DATA_KEY = "studytrack.data.v2";
+        const LEGACY_KEY = "studytrack.subjects.v1";
+        const state = { subjects: loadSubjects() };
+        const pages = Array.from(document.querySelectorAll("[data-page]"));
+        const navLinks = Array.from(document.querySelectorAll(".nav-link"));
+        const message = document.getElementById("app-message");
+        let editingSubjectId = null;
+        let selectedSubjectId = null;
+
+        function makeId() {
+            return window.crypto && typeof window.crypto.randomUUID === "function"
+                ? window.crypto.randomUUID()
+                : Date.now().toString(36) + Math.random().toString(36).slice(2);
+        }
+
+        function normalizeSubject(subject) {
+            if (!subject || typeof subject.name !== "string" || !subject.name.trim()) return null;
+            return {
+                id: typeof subject.id === "string" ? subject.id : makeId(),
+                name: subject.name.trim(),
+                description: typeof subject.description === "string" ? subject.description : (typeof subject.details === "string" ? subject.details : ""),
+                topics: Array.isArray(subject.topics)
+                    ? subject.topics.filter((topic) => topic && typeof topic.name === "string" && topic.name.trim()).map((topic) => ({
+                        id: typeof topic.id === "string" ? topic.id : makeId(),
+                        name: topic.name.trim(),
+                        completed: topic.completed === true
+                    }))
+                    : []
+            };
+        }
+
+        function loadSubjects() {
+            try {
+                const current = localStorage.getItem(DATA_KEY);
+                if (current) {
+                    const saved = JSON.parse(current);
+                    if (!saved || typeof saved !== "object" || Array.isArray(saved)) throw new Error("Saved data has an invalid format.");
+                    return (Array.isArray(saved.subjects) ? saved.subjects : []).map(normalizeSubject).filter(Boolean);
+                }
+                const legacy = localStorage.getItem(LEGACY_KEY);
+                if (!legacy) return [];
+                const savedSubjects = JSON.parse(legacy);
+                if (!Array.isArray(savedSubjects)) throw new Error("Saved subject data has an invalid format.");
+                return savedSubjects.map(normalizeSubject).filter(Boolean);
+            } catch (error) {
+                console.error("Could not load StudyTrack subjects:", error);
+                window.addEventListener("DOMContentLoaded", () => showMessage("Saved subjects could not be read. The page is open with an empty list.", true), { once: true });
+                return [];
+            }
+        }
+
+        function showMessage(text, isError) {
+            message.textContent = text;
+            message.className = isError
+                ? "rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+                : "rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800";
+            message.hidden = false;
+        }
+
+        function saveSubjects(successMessage) {
+            try {
+                if (state.subjects.length) {
+                    localStorage.setItem(DATA_KEY, JSON.stringify({ subjects: state.subjects }));
+                } else {
+                    localStorage.removeItem(DATA_KEY);
+                }
+                localStorage.removeItem(LEGACY_KEY);
+                if (successMessage) showMessage(successMessage, false);
+                else message.hidden = true;
+                return true;
+            } catch (error) {
+                console.error("Could not save StudyTrack subjects:", error);
+                showMessage("Your changes could not be saved. Check that browser storage is available.", true);
+                return false;
+            }
+        }
+
+        function showPage(name, pushHistory) {
+            let target = pages.some((page) => page.id === name) ? name : "dashboard";
+            if (target === "subject-topics-page" && !state.subjects.some((subject) => subject.id === selectedSubjectId)) {
+                target = "subjects";
+            }
+            pages.forEach((page) => { page.hidden = page.id !== target; });
+            const activeNavView = target === "subject-topics-page" ? "subjects" : target;
+            navLinks.forEach((link) => {
+                const active = link.dataset.view === activeNavView;
+                link.classList.toggle("bg-indigo-50", active);
+                link.classList.toggle("text-indigo-700", active);
+                link.classList.toggle("text-gray-600", !active);
+                if (active) link.setAttribute("aria-current", "page");
+                else link.removeAttribute("aria-current");
+            });
+            if (pushHistory) history.pushState({ page: target, subjectId: selectedSubjectId }, "", "#" + (target === "subject-topics-page" ? "topics" : target));
+        }
+
+        function getProgress() {
+            const topics = state.subjects.reduce((total, subject) => total + subject.topics.length, 0);
+            const completed = state.subjects.reduce((total, subject) => total + subject.topics.filter((topic) => topic.completed).length, 0);
+            return { topics, completed, percent: topics ? Math.floor(completed / topics * 100) : 0 };
+        }
+
+        function setBar(barId, percent) {
+            const bar = document.getElementById(barId);
+            bar.style.width = percent + "%";
+            bar.parentElement.setAttribute("aria-valuenow", percent);
+        }
+
+        function subjectPercent(subject) {
+            const complete = subject.topics.filter((topic) => topic.completed).length;
+            return subject.topics.length ? Math.floor(complete / subject.topics.length * 100) : 0;
+        }
+
+        function makeButton(text, className, onClick) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.textContent = text;
+            button.className = className;
+            button.addEventListener("click", onClick);
+            return button;
+        }
+
+        function renderStats() {
+            const progress = getProgress();
+            document.getElementById("dashboard-subject-count").textContent = state.subjects.length;
+            document.getElementById("dashboard-completed-count").textContent = progress.completed;
+            document.getElementById("dashboard-topic-count").textContent = progress.topics;
+            document.getElementById("dashboard-percent").textContent = progress.percent + "%";
+            setBar("dashboard-bar", progress.percent);
+            document.getElementById("dashboard-empty").hidden = state.subjects.length > 0;
+
+            document.getElementById("progress-subject-count").textContent = state.subjects.length;
+            document.getElementById("progress-completed-count").textContent = progress.completed;
+            document.getElementById("progress-percent").textContent = progress.percent + "%";
+            setBar("progress-bar", progress.percent);
+            document.getElementById("progress-summary").textContent = progress.topics === 0
+                ? "Add subjects and topics to start seeing your progress."
+                : "You have completed " + progress.completed + " of " + progress.topics + " topics.";
+            document.getElementById("progress-empty").hidden = state.subjects.length > 0;
+        }
+
+        function openSubjectForm(subject) {
+            editingSubjectId = subject ? subject.id : null;
+            document.getElementById("subject-form-title").textContent = subject ? "Edit subject" : "Add a subject";
+            document.getElementById("subject-name").value = subject ? subject.name : "";
+            document.getElementById("subject-description").value = subject ? subject.description : "";
+            const form = document.getElementById("subject-form");
+            form.hidden = false;
+            document.getElementById("subject-name").focus();
+            form.scrollIntoView({ block: "nearest" });
+        }
+
+        function renderSubjects() {
+            const list = document.getElementById("subject-list");
+            const emptyState = document.getElementById("subjects-empty");
+            list.replaceChildren();
+            emptyState.hidden = state.subjects.length > 0;
+            document.getElementById("add-subject-button").hidden = state.subjects.length === 0;
+
+            state.subjects.forEach((subject) => {
+                const card = document.createElement("article");
+                card.className = "rounded-2xl border border-gray-100 p-5 shadow-sm";
+
+                const header = document.createElement("div");
+                header.className = "flex items-start justify-between gap-3";
+                const titleGroup = document.createElement("div");
+                titleGroup.className = "min-w-0";
+                const title = document.createElement("h2");
+                title.className = "break-words text-lg font-bold";
+                title.textContent = subject.name;
+                titleGroup.append(title);
+                if (subject.description) {
+                    const description = document.createElement("p");
+                    description.className = "mt-1 break-words text-sm text-gray-500";
+                    description.textContent = subject.description;
+                    titleGroup.append(description);
+                }
+                const percentLabel = document.createElement("span");
+                percentLabel.className = "shrink-0 rounded-full bg-indigo-50 px-3 py-1 text-sm font-bold text-indigo-700";
+                percentLabel.textContent = subjectPercent(subject) + "%";
+                header.append(titleGroup, percentLabel);
+
+                const summary = document.createElement("p");
+                summary.className = "mt-3 text-sm text-gray-500";
+                summary.textContent = subject.topics.length + " topics · " + subject.topics.filter((topic) => topic.completed).length + " completed";
+
+                const track = document.createElement("div");
+                track.className = "mt-3 h-2.5 rounded-full bg-gray-100";
+                track.setAttribute("role", "progressbar");
+                track.setAttribute("aria-label", subject.name + " completion");
+                track.setAttribute("aria-valuemin", "0");
+                track.setAttribute("aria-valuemax", "100");
+                track.setAttribute("aria-valuenow", subjectPercent(subject));
+                const bar = document.createElement("div");
+                bar.className = "h-2.5 rounded-full bg-indigo-600";
+                bar.style.width = subjectPercent(subject) + "%";
+                track.append(bar);
+
+                const actions = document.createElement("div");
+                actions.className = "mt-4 flex flex-wrap gap-2 border-t border-gray-100 pt-3";
+                actions.append(
+                    makeButton("Open Topics →", "rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-700", () => {
+                        openSubjectTopics(subject.id, true);
+                    }),
+                    makeButton("Edit Subject", "rounded-lg border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50", () => openSubjectForm(subject)),
+                    makeButton("Delete Subject", "rounded-lg border border-red-100 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50", () => {
+                        if (!window.confirm("Delete “" + subject.name + "” and all its topics? This cannot be undone.")) return;
+                        state.subjects = state.subjects.filter((item) => item.id !== subject.id);
+                        saveSubjects("Subject deleted.");
+                        renderAll();
+                    })
+                );
+                card.append(header, summary, track, actions);
+                list.append(card);
+            });
+        }
+
+        function openSubjectTopics(subjectId, pushHistory) {
+            if (!state.subjects.some((subject) => subject.id === subjectId)) {
+                showPage("subjects", pushHistory);
+                return;
+            }
+            selectedSubjectId = subjectId;
+            renderSubjectTopics();
+            showPage("subject-topics-page", pushHistory);
+        }
+
+        function renderSubjectTopics() {
+            const subject = state.subjects.find((item) => item.id === selectedSubjectId);
+            const content = document.getElementById("selected-subject-content");
+            content.replaceChildren();
+            if (!subject) return;
+
+            const heading = document.createElement("div");
+            heading.className = "border-b border-gray-100 pb-5";
+            const eyebrow = document.createElement("p");
+            eyebrow.className = "text-sm font-bold uppercase tracking-wide text-indigo-600";
+            eyebrow.textContent = "SUBJECT TOPICS";
+            const title = document.createElement("h1");
+            title.className = "mt-1 text-2xl font-extrabold";
+            title.textContent = subject.name;
+            heading.append(eyebrow, title);
+            if (subject.description) {
+                const description = document.createElement("p");
+                description.className = "mt-2 text-sm text-gray-500";
+                description.textContent = subject.description;
+                heading.append(description);
+            }
+            content.append(heading);
+
+            const percent = subjectPercent(subject);
+            const overview = document.createElement("div");
+            overview.className = "mt-5 rounded-xl bg-indigo-50 p-4";
+            const overviewText = document.createElement("div");
+            overviewText.className = "flex items-center justify-between text-sm";
+            const counts = document.createElement("span");
+            counts.className = "font-medium text-gray-700";
+            counts.textContent = subject.topics.filter((topic) => topic.completed).length + " of " + subject.topics.length + " topics completed";
+            const percentText = document.createElement("span");
+            percentText.className = "font-bold text-indigo-700";
+            percentText.textContent = percent + "%";
+            overviewText.append(counts, percentText);
+            const track = document.createElement("div");
+            track.className = "mt-3 h-2.5 rounded-full bg-white";
+            track.setAttribute("role", "progressbar");
+            track.setAttribute("aria-label", subject.name + " completion");
+            track.setAttribute("aria-valuemin", "0");
+            track.setAttribute("aria-valuemax", "100");
+            track.setAttribute("aria-valuenow", percent);
+            const bar = document.createElement("div");
+            bar.className = "h-2.5 rounded-full bg-indigo-600";
+            bar.style.width = percent + "%";
+            track.append(bar);
+            overview.append(overviewText, track);
+            content.append(overview);
+
+            if (!subject.topics.length) {
+                const noTopics = document.createElement("p");
+                noTopics.className = "mt-5 rounded-xl border border-dashed border-gray-200 p-5 text-center text-sm text-gray-500";
+                noTopics.textContent = "No topics yet. Add your first syllabus topic below.";
+                content.append(noTopics);
+            } else {
+                const groups = [
+                    { title: "Pending Topics", topics: subject.topics.filter((topic) => !topic.completed), empty: "No pending topics." },
+                    { title: "Completed Topics", topics: subject.topics.filter((topic) => topic.completed), empty: "No completed topics yet." }
+                ];
+                groups.forEach((item) => {
+                    const group = document.createElement("div");
+                    group.className = "mt-5 space-y-2";
+                    const groupTitle = document.createElement("h2");
+                    groupTitle.className = "text-sm font-bold uppercase tracking-wide text-gray-500";
+                    groupTitle.textContent = item.title + " (" + item.topics.length + ")";
+                    group.append(groupTitle);
+                    if (!item.topics.length) {
+                        const empty = document.createElement("p");
+                        empty.className = "text-sm text-gray-400";
+                        empty.textContent = item.empty;
+                        group.append(empty);
+                    }
+                    item.topics.forEach((topic) => {
+                        const row = document.createElement("div");
+                        row.className = "flex items-center justify-between gap-2 rounded-lg border border-gray-100 px-3 py-2";
+                        const label = document.createElement("label");
+                        label.className = "flex min-w-0 items-center gap-2 text-sm text-gray-700";
+                        const checkbox = document.createElement("input");
+                        checkbox.type = "checkbox";
+                        checkbox.checked = topic.completed;
+                        checkbox.className = "h-4 w-4 shrink-0 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500";
+                        checkbox.setAttribute("aria-label", "Mark " + topic.name + " as completed");
+                        const topicName = document.createElement("span");
+                        topicName.className = topic.completed ? "break-words text-gray-400 line-through" : "break-words";
+                        topicName.textContent = topic.name;
+                        label.append(checkbox, topicName);
+                        checkbox.addEventListener("change", () => {
+                            topic.completed = checkbox.checked;
+                            saveSubjects();
+                            renderAll();
+                        });
+                        row.append(
+                            label,
+                            makeButton("Remove", "shrink-0 rounded px-2 py-1 text-xs font-medium text-gray-400 hover:bg-red-50 hover:text-red-600", () => {
+                                if (!window.confirm("Remove topic “" + topic.name + "”?")) return;
+                                subject.topics = subject.topics.filter((candidate) => candidate.id !== topic.id);
+                                saveSubjects("Topic removed.");
+                                renderAll();
+                            })
+                        );
+                        group.append(row);
+                    });
+                    content.append(group);
+                });
+            }
+
+            const form = document.createElement("form");
+            form.className = "mt-5 flex flex-col gap-2 sm:flex-row";
+            const input = document.createElement("input");
+            input.type = "text";
+            input.required = true;
+            input.maxLength = 120;
+            input.placeholder = "Add a syllabus topic";
+            input.setAttribute("aria-label", "New topic for " + subject.name);
+            input.className = "min-w-0 flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none";
+            const addButton = document.createElement("button");
+            addButton.type = "submit";
+            addButton.className = "rounded-lg bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100";
+            addButton.textContent = subject.topics.length ? "Add Topic" : "Add Topics";
+            form.append(input, addButton);
+            form.addEventListener("submit", (event) => {
+                event.preventDefault();
+                const name = input.value.trim();
+                if (!name) {
+                    input.setCustomValidity("Enter a topic name.");
+                    input.reportValidity();
+                    return;
+                }
+                subject.topics.push({ id: makeId(), name, completed: false });
+                saveSubjects("Topic added.");
+                renderAll();
+            });
+            input.addEventListener("input", () => input.setCustomValidity(""));
+            content.append(form);
+        }
+
+        function renderProgress() {
+            const list = document.getElementById("subject-progress-list");
+            list.replaceChildren();
+            state.subjects.forEach((subject) => {
+                const percent = subjectPercent(subject);
+                const row = document.createElement("div");
+                const heading = document.createElement("div");
+                heading.className = "mb-2 flex items-center justify-between gap-3 text-sm";
+                const name = document.createElement("span");
+                name.className = "font-semibold";
+                name.textContent = subject.name;
+                const value = document.createElement("span");
+                value.className = "shrink-0 text-gray-500";
+                value.textContent = subject.topics.filter((topic) => topic.completed).length + " / " + subject.topics.length + " · " + percent + "%";
+                heading.append(name, value);
+                const track = document.createElement("div");
+                track.className = "h-2.5 rounded-full bg-gray-100";
+                track.setAttribute("role", "progressbar");
+                track.setAttribute("aria-label", subject.name + " completion");
+                track.setAttribute("aria-valuemin", "0");
+                track.setAttribute("aria-valuemax", "100");
+                track.setAttribute("aria-valuenow", percent);
+                const bar = document.createElement("div");
+                bar.className = "h-2.5 rounded-full bg-indigo-600";
+                bar.style.width = percent + "%";
+                track.append(bar);
+                row.append(heading, track);
+                list.append(row);
+            });
+        }
+
+        function renderAll() {
+            renderStats();
+            renderSubjects();
+            renderProgress();
+            if (!document.getElementById("subject-topics-page").hidden) renderSubjectTopics();
+        }
+
+        document.addEventListener("click", (event) => {
+            const link = event.target.closest("[data-view]");
+            if (!link) return;
+            event.preventDefault();
+            showPage(link.dataset.view, true);
+        });
+
+        function restoreNavigation(event) {
+            if (event && event.state && event.state.subjectId) {
+                selectedSubjectId = event.state.subjectId;
+            }
+            const hash = location.hash.slice(1) || "dashboard";
+            if (hash === "topics") {
+                if (selectedSubjectId && state.subjects.some((subject) => subject.id === selectedSubjectId)) {
+                    openSubjectTopics(selectedSubjectId, false);
+                } else {
+                    showPage("subjects", false);
+                }
+                return;
+            }
+            showPage(hash, false);
+        }
+
+        window.addEventListener("popstate", restoreNavigation);
+        window.addEventListener("hashchange", restoreNavigation);
+
+        document.getElementById("topics-back-button").addEventListener("click", () => showPage("subjects", true));
+        document.getElementById("topics-next-button").addEventListener("click", () => showPage("progress", true));
+        document.getElementById("progress-back-button").addEventListener("click", () => {
+            if (selectedSubjectId && state.subjects.some((subject) => subject.id === selectedSubjectId)) {
+                openSubjectTopics(selectedSubjectId, true);
+            } else {
+                showPage("subjects", true);
+            }
+        });
+
+        document.getElementById("add-subject-button").addEventListener("click", () => openSubjectForm(null));
+        document.getElementById("empty-add-subject").addEventListener("click", () => openSubjectForm(null));
+        document.getElementById("cancel-subject-form").addEventListener("click", () => {
+            document.getElementById("subject-form").reset();
+            document.getElementById("subject-form").hidden = true;
+            editingSubjectId = null;
+        });
+        document.getElementById("subject-name").addEventListener("input", (event) => event.currentTarget.setCustomValidity(""));
+
+        document.getElementById("subject-form").addEventListener("submit", (event) => {
+            event.preventDefault();
+            const nameInput = document.getElementById("subject-name");
+            const name = nameInput.value.trim();
+            if (!name) {
+                nameInput.setCustomValidity("Enter a subject name.");
+                nameInput.reportValidity();
+                return;
+            }
+            const description = document.getElementById("subject-description").value.trim();
+            if (editingSubjectId) {
+                const subject = state.subjects.find((item) => item.id === editingSubjectId);
+                if (subject) Object.assign(subject, { name, description });
+            } else {
+                state.subjects.push({ id: makeId(), name, description, topics: [] });
+            }
+            const wasEditing = Boolean(editingSubjectId);
+            event.currentTarget.reset();
+            event.currentTarget.hidden = true;
+            editingSubjectId = null;
+            saveSubjects(wasEditing ? "Subject updated." : "Subject added.");
+            renderAll();
+        });
+
+        renderAll();
+        restoreNavigation(history.state);
+    </script>
+</body>
+</html>
